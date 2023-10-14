@@ -1,6 +1,7 @@
 local Camera = require("lib.camera")
 local Util = require("lib.util")
 local Car = require("lib.car")
+local TrackBuilder = require("lib.track_builder")
 local physics = require("physics")
 
 
@@ -60,17 +61,12 @@ Track.new = function (_trackGroup)
 	local stage = display.currentStage
 	trackPosX, trackPosY = display.contentCenterX, display.contentCenterY
 	local track = {x = 0, y = 0, rotation = 0}
-	track.rect = Util.makeRect("track.png", trackPosX, trackPosY, 3000, 3000, trackGroup)
-	track.mask = display.newRect(trackGroup, trackPosX, trackPosY, 3000, 3000)
-	track.mask.isHitTestable = true
-	local mask = graphics.newMask("track_mask.png")
-	track.mask:setMask(mask)
-	track.mask.maskScaleX = 2.929
-	track.mask.maskScaleY = 2.929
-	physics.addBody(track.mask, "static", {isSensor = true})
-	--track.maskX, track.maskY = trackPosX, trackPosY
-	--display.newImageRect(trackGroup, "track.png", 3000, 3000)
-	Camera.registerObject(track.rect)
+	track.mesh = TrackBuilder.BuildTrack(nil, trackGroup, true, false)
+	local scaleFactor = 6.666
+	local w, h = track.mesh.width * scaleFactor, track.mesh.height * scaleFactor
+	track.mesh.width, track.mesh.height = w, h
+	track.mesh.ww, track.mesh.hh = w, h
+	Camera.registerObject(track.mesh, false, true)
 	for i = 1, 100 do
 		Track.newObject(objectTypes.cone, i * 10, 0)
 	end

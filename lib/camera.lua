@@ -18,14 +18,31 @@ local getAngle = function (x1, y1, x2, y2)
 	return math.atan2(y2-y1, x2-x1)
 end
 
-Camera.registerObject = function(obj)
-	print(obj.width)
-	local newObj = display.newRect(cameraView, 0, 0, obj.width, obj.height)
+Camera.registerObject = function(obj, _hasFill, _isMesh)
+	local hasFill; if _hasFill == false then hasFill = false else hasFill = true end
+	local isMesh; if _isMesh == true then isMesh = true else isMesh = false end
+	print(obj.width, obj.height, isMesh)
+	local newObj
+	if isMesh then 
+		newObj = display.newMesh(cameraView, 0, 0, {mode = "strip", vertices = obj.vertices})
+		display.setDefault( "textureWrapX", "repeat" )
+		display.setDefault( "textureWrapY", "repeat" )
+		newObj.fill = {type = "image", filename = "road_tex.png"}
+		newObj.fill.scaleX = 64 / obj.ww
+		newObj.fill.scaleY = 64 / obj.hh
+		--newObj:translate( newObj.path:getVertexOffset() )
+		newObj.width, newObj.height = obj.ww, obj.hh
+		newObj.ww, newObj.hh = obj.ww, obj.hh
+	else
+		newObj = display.newRect(cameraView, 0, 0, obj.width, obj.height)
+	end
 	newObj.obj = obj
 	--print(obj.fillRef.type, obj.fillRef.filename)
-	newObj.fill = {type = obj.fillRef.type, filename = obj.fillRef.filename}
-	--print(newObj.fill)
-	newObj.stroke = obj.stroke
+	if hasFill then
+		newObj.fill = {type = obj.fillRef.type, filename = obj.fillRef.filename}
+		--print(newObj.fill)
+		newObj.stroke = obj.stroke
+	end
 	cameraView.objects[#cameraView.objects+1] = newObj
 	cameraView:bringToFront()
 end
@@ -63,7 +80,12 @@ Camera.onFrame = function()
 	for i=1,#cameraView.objects do
 		local camObj = cameraView.objects[i]
 		local obj = camObj.obj
-		if obj.width > camera.width or obj.height > camera.height then
+		if (obj.ww and obj.hh) then
+			local dx, dy = obj.x - camera.x, obj.y - camera.y
+			local anchorX, anchorY = dx / obj.ww, dy / obj.hh
+			camObj.anchorX, camObj.anchorY = .5 - anchorX, .5 - anchorY
+			camObj.rotation = obj.rotation - camera.rotation
+		elseif obj.width > camera.width or obj.height > camera.height then
 			local dx, dy = obj.x - camera.x, obj.y - camera.y
 			local anchorX, anchorY = dx / camObj.width, dy / camObj.height
 			camObj.anchorX, camObj.anchorY = .5 - anchorX, .5 - anchorY

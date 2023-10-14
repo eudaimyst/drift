@@ -68,7 +68,7 @@ Car.new = function (spawnX, spawnY)
 	
 	car.onFrame = function (self, _dt)
 		local timeScale = _dt / targetDT
-		print (_dt, timeScale)
+		--print (_dt, timeScale)
 
 		self.linearVelocity = Util.vectorDistance(self.phys:getLinearVelocity())
 		self.angularVelocity = self.phys.angularVelocity
